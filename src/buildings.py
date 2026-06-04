@@ -1,6 +1,7 @@
 import os
-import reverse_geocoder as rg
 import pandas as pd
+
+import reverse_geocoder as rg
 
 cache = {}
 
@@ -11,9 +12,13 @@ def find_county(lat: float, lon: float, precision: int=2) -> str:
     Args:
         lat: Latitude (-90 to 90)
         lon: Longitude (-180 to 180)
+        precision: rounding error on lat/lon (2~1/2 mile, 3~250 ft, 4~25 ft)
     
     Returns:
-        A string with the county/admin2 name, or a descriptive message if not found.
+        A string with the county/st name
+
+    Raises:
+        RuntimeError: unable to resolve location
     """
     pos = (round(lat,precision),round(lon,precision))
     try:
@@ -35,7 +40,7 @@ def find_county(lat: float, lon: float, precision: int=2) -> str:
                 raise RuntimeError(f"{lat},{lon} has no known state/province in {country}")
         
         else:
-            raise RuntimeError("Location not found")
+            raise RuntimeError("{lat},{lon} location not found")
 
         cache[pos] = result
         return result
