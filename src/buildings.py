@@ -49,14 +49,20 @@ def find_county(lat: float, lon: float, precision: int=2) -> str:
 # Example usage
 if __name__ == "__main__":
 
+    from time import time
+    from datetime import timedelta
+
     pd.options.display.max_columns = None
     pd.options.display.width = None
+    # pd.set_option('compute.use_numexpr', False)
 
     path = "/Volumes/CHASSIN_3T/AutoBEM"
-    for file in sorted(os.listdir(path)):
+    for file in [x for x in sorted(os.listdir(path)) if not os.path.exists(f"US/{x}")]:
         cache = {}
+        print("Reading",file)
         df = pd.read_csv(f"{path}/{file}",
-            usecols=["ID","Centroid","Area","Area2D","NumFloors","CZ","BuildingType","Standard"]
+            usecols=["ID","Centroid","Area","Area2D","NumFloors","CZ","BuildingType","Standard"],
+            # engine="c",
             ).rename(
             {
                 "ID":"buildingid",
@@ -67,7 +73,7 @@ if __name__ == "__main__":
                 "CZ":"climatezone",
                 "BuildingType":"buildingtype",
                 "Standard":"buildingcode",
-            },axis=1)
+            },axis=1).set_index("buildingid").sort_values(["location"])
 
         STATE_CODES = {
                 "alabama": "AL", "alaska": "AK", "arizona": "AZ", "arkansas": "AR",
@@ -88,9 +94,13 @@ if __name__ == "__main__":
                 "puerto rico": "PR", "guam": "GU", "us virgin islands": "VI",
                 "american samoa": "AS", "northern mariana islands": "MP",
             }
-        counties = {}
-        for n,data in df.iterrows():
-            buildingid = data["buildingid"]
+        counties = []
+        N = len(df)
+        tic = time()
+        eta = None
+        n = 0
+        for buildingid,data in df.iterrows():
+            n += 1
             latlon = tuple(map(lambda x:round(float(x),6),data["location"].split("/")))
             result = find_county(*latlon).split(",")
             county = result[0].split(" ")
@@ -104,9 +114,9 @@ if __name__ == "__main__":
             else:
                 county = " ".join(county)
             county_st = f"{county} {state}"
-            print("\033[0G\033[2K",n,buildingid,latlon,county_st,end="...",flush=True)
-            if not county_st in counties:
-                counties[county_st] = []
-            counties[county_st].append(data.to_frame())
-        for county,data in counties.items():
-            pd.concat(data).to_csv(county,index=False,header=True)
+            toc = time()
+            eta = (toc-tic)*N/(n+1)
+            counties.append(county_st)
+            print("\033[0G\033[2K",f"{n}/{N}:",buildingid,latlon,county_st,f"({n/N*100:.1f}% done, {n/eta:.0f}/sec, {timedelta(seconds=eta)} to go)",end="...",flush=True)
+        df["county"] = counties
+        df.set_index("county").sort_index().to_csv(f"US/{state}.csv.gz",index=True,header=True,compression=True)
