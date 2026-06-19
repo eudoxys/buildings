@@ -75,9 +75,11 @@ class Buildings(pd.DataFrame):
             for buildingid,data in df.iterrows():
                 n += 1
                 latlon = tuple(map(lambda x:round(float(x),self.LATLON_PRECISION),data["location"].split("/")))
-                county = find_county(*latlon)["county"]
+                county = find_county(*latlon)
                 if county is None:
-                    print("ERROR: unable to find county for {buildingid=}",file=sys.stderr)
+                    print(f"ERROR: unable to find county for {buildingid=} at {latlon=}",file=sys.stderr)
+                    continue
+                county = county["county"]
                 if county.split()[-1] in ["County","Municipality","Borough","Parish"]:
                     county = " ".join(county[:-1])
                 county_st = f"{county} {state}"

@@ -1,5 +1,7 @@
 # US building database
 
+Documentation is located at https://www.eudoxys.com/buildings.
+
 US Building Inventory
 ---------------------
 
