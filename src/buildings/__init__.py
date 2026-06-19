@@ -78,4 +78,4 @@ References
 1. New, J. R., Bass, B., & Adams, M. (2023). Automatic Building Energy Modeling (AutoBEM). U.S. Department of Energy. [DOE's OSTI Database](https://www.osti.gov/doecode/biblio/115947).
 """
 
-from .buildings import Buildings
+from buildings.buildings import Buildings

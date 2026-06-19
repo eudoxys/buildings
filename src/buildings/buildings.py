@@ -7,7 +7,7 @@ from datetime import timedelta
 from warnings import warn
 
 import pandas as pd
-from _find_county import find_county
+from buildings._find_county import find_county
 import reverse_geocoder as rg
 
 from geohash import geohash
