@@ -78,6 +78,7 @@ class Buildings(pd.DataFrame):
                 county = find_county(*latlon)
                 if county is None:
                     print(f"ERROR: unable to find county for {buildingid=} at {latlon=}",file=sys.stderr)
+                    counties.append("")
                     continue
                 county = county["county"]
                 if county.split()[-1] in ["County","Municipality","Borough","Parish"]:
@@ -117,6 +118,11 @@ class Buildings(pd.DataFrame):
         - `path`: path to read/write
 
         - `columns`: columns to output to CSV
+
+        Returns
+        -------
+
+        - `list[str]`: list of county-level CSV files created
         """
         if path is None:
             path = self.TARGET_PATH
