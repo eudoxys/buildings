@@ -68,7 +68,7 @@ Package Information
 - Dependencies:
 
   - [pandas](https://pypi.org/project/pandas)
-  - [reverse_geocoder](https://pypi.org/project/openpyxl)
+  - [geopandas](https://pypi.org/project/geopandas)
   - [geohash](https://github.com/eudoxys/geohash)
 
 

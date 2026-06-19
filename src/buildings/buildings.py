@@ -2,15 +2,18 @@
 """
 
 import os
+import sys
 from time import time
 from datetime import timedelta
 from warnings import warn
 
 import pandas as pd
-from buildings._find_county import find_county
-import reverse_geocoder as rg
 
 from geohash import geohash
+try:
+    from ._find_county import find_county
+except: # dev only
+    from _find_county import find_county
 
 class Buildings(pd.DataFrame):
 
@@ -73,6 +76,8 @@ class Buildings(pd.DataFrame):
                 n += 1
                 latlon = tuple(map(lambda x:round(float(x),self.LATLON_PRECISION),data["location"].split("/")))
                 county = find_county(*latlon)["county"]
+                if county is None:
+                    print("ERROR: unable to find county for {buildingid=}",file=sys.stderr)
                 if county.split()[-1] in ["County","Municipality","Borough","Parish"]:
                     county = " ".join(county[:-1])
                 county_st = f"{county} {state}"
@@ -182,6 +187,6 @@ if __name__ == "__main__":
             df = Buildings(state)
             df.to_counties(state)
     except KeyboardInterrupt as err:
-        print("\nINTERRUPT: Ctrl-C received")
+        print("\nINTERRUPT: Ctrl-C received",file=sys.stderr)
     # except Exception as err:
     #     print("\nEXCEPTION:",err)
