@@ -50,13 +50,24 @@ class Buildings(pd.DataFrame):
     - `longitude`: the building centroid longitude in degrees east (west is
       negative).
     """
+
     LIBRARY_PATH = "https://s3.us-east-1.amazonaws.com/buildings.eudoxys.com/US/{state}.csv"
+    """Specifies the template for the where the data files are archied"""
 
     VERBOSE = False
+    """Enable verbose output"""
+    
     ANSI = True
+    """Enable ANSI codes in output"""
+
     TARGET_PATH = "US"
+    """Target path for country"""
+
     LATLON_PRECISION = 5
+    """Decimal precision of latitude and longitude values"""
+
     GEOHASH_PRECISION = 10
+    """Precision of geohash codes"""
 
     def __init__(self,
         state:str,
@@ -155,7 +166,7 @@ class Buildings(pd.DataFrame):
         state,
         path:str|None=None,
         columns:list[str]|None=None,
-        ):
+        ) -> list[str]:
         """Write county-level building inventory files
 
         Arguments
@@ -245,5 +256,3 @@ if __name__ == "__main__":
                 df.to_counties(state)
     except KeyboardInterrupt as err:
         print("\nINTERRUPT: Ctrl-C received",file=sys.stderr)
-    # except Exception as err:
-    #     print("\nEXCEPTION:",err)

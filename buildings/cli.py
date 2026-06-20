@@ -20,7 +20,7 @@ from buildings import Buildings
 E_OK = 0
 E_FAILED = 1
 
-def main(argv:list[str]|None=None):
+def main(argv:list[str]|None=None) -> int:
     """Main function
 
     Arguments
