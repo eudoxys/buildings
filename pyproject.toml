@@ -8,9 +8,6 @@ loads = ["*.py"]
 [tool.setuptools.dynamic]
 dependencies = {file=["requirements.txt"]}
 
-[tool.setuptools.packages.find]
-where = ["src/buildings"]
-
 [project]
 name = "buildings"
 version = "0.0.0"

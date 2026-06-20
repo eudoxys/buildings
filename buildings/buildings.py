@@ -1,4 +1,7 @@
 """Buildings inventory
+
+Generate the US buildings inventory for upload to AWS. You must manually
+upload the `US/` folder and the `index.csv` file to your AWS S3 bucket.
 """
 
 import os
@@ -36,71 +39,86 @@ class Buildings(pd.DataFrame):
 
         - `state`: state postal code, e.g., "AK"
 
-        - `refresh`: force refresh of local file from source data
+        - `refresh`: force refresh of local files from source data
         """
         cache = {}
         file = self.LIBRARY_PATH.format(state=state)
         if self.VERBOSE: print("Downloading",file,end="...",flush=True)
         pathname = f"{self.TARGET_PATH}/{state}.csv.gz"
+        df = None
         if os.path.exists(pathname) and not refresh:
-            df = pd.read_csv(pathname).set_index("county")
-        else:
-            df = pd.read_csv(file,
-                usecols=["ID","Centroid","Area","Area2D","NumFloors","CZ","BuildingType","Standard"],
-                converters={
-                    "Area": lambda x: int(float(x)),
-                    "Area2D": lambda x: int(float(x)),
-                    "NumFloors": lambda x: int(float(x)),
-                }
-                ).rename(
-                {
-                    "ID":"buildingid",
-                    "Centroid":"location",
-                    "Area":"floorarea",
-                    "Area2D":"groundarea",
-                    "NumFloors":"floors",
-                    "CZ":"climatezone",
-                    "BuildingType":"buildingtype",
-                    "Standard":"buildingcode",
-                },axis=1).set_index("buildingid").sort_values(["location"])
-            if self.VERBOSE: print("ok")
+            try:
+                df = pd.read_csv(pathname).set_index("county")
+                if self.VERBOSE: print("ok")
+            except Exception as err:
+                print(f"ERROR: {pathname=} {err=}")
 
-            counties = []
-            N = len(df)
-            tic = time()
-            eta = None
-            n = 0
-            last_eta = None
-            last_pcdone = None
-            for buildingid,data in df.iterrows():
-                n += 1
-                latlon = tuple(map(lambda x:round(float(x),self.LATLON_PRECISION),data["location"].split("/")))
-                county = find_county(*latlon)
-                if county is None:
-                    print(f"ERROR: unable to find county for {buildingid=} at {latlon=}",file=sys.stderr)
-                    counties.append("")
-                    continue
-                county = county["county"]
-                if county.split()[-1] in ["County","Municipality","Borough","Parish"]:
-                    county = " ".join(county[:-1])
-                county_st = f"{county} {state}"
-                toc = time()
-                eta = round((toc-tic)*(N-n)/n,0)
-                counties.append(county_st)
-                if self.VERBOSE: 
-                    print(f"{'\033[0G\033[2K' if self.ANSI else ''}Processing {state} record {n} of {N} {buildingid=} {latlon=} {county_st=} ({n/N*100:.1f}% done, {n/(toc-tic):.0f}/sec, {timedelta(seconds=eta)} to go)...",flush=True)
-                else:
-                    pcdone = f"{n/N*100:.1f}"
-                    if last_pcdone != pcdone or last_eta != eta:
-                        print(f"{'\033[0G\033[2K' if self.ANSI else ''}Processing {state} ({pcdone}% done, ETA {timedelta(seconds=eta)})",flush=True,end="..." if self.ANSI else None)
-                        last_pcdone = pcdone
-                        last_eta = eta
-            print("done")
-            df["county"] = counties
-            df.set_index("county",inplace=True)
-            df.sort_index(inplace=True)
-            os.makedirs(os.path.dirname(pathname),exist_ok=True)
-            df.to_csv(pathname,index=True,header=True,compression="gzip")
+        if df is None:
+            try:
+                df = pd.read_csv(file,
+                    usecols=["ID","Centroid","Area","Area2D","NumFloors","CZ","BuildingType","Standard"],
+                    converters={
+                        "Area": lambda x: int(float(x)),
+                        "Area2D": lambda x: int(float(x)),
+                        "NumFloors": lambda x: int(float(x)),
+                    }
+                    ).rename(
+                    {
+                        "ID":"buildingid",
+                        "Centroid":"location",
+                        "Area":"floorarea",
+                        "Area2D":"groundarea",
+                        "NumFloors":"floors",
+                        "CZ":"climatezone",
+                        "BuildingType":"buildingtype",
+                        "Standard":"buildingcode",
+                    },axis=1).set_index("buildingid").sort_values(["location"])
+                if self.VERBOSE: print("ok")
+
+                counties = []
+                N = len(df)
+                tic = time()
+                eta = None
+                n = 0
+                last_eta = None
+                last_pcdone = None
+                for buildingid,data in df.iterrows():
+                    n += 1
+                    latlon = tuple(map(lambda x:round(float(x),self.LATLON_PRECISION),data["location"].split("/")))
+                    county = find_county(*latlon)
+                    retry = 1e-7
+                    while county is None and retry < 1e-4:
+                        latlon = [x+retry for x in latlon]
+                        county = find_county(*latlon)
+                        retry *= 2
+                    if county is None:
+                        print(f"ERROR: unable to find county for {buildingid=} at {latlon=}",file=sys.stderr)
+                        counties.append("")
+                    else:
+                        county = county["county"]
+                        if county.split()[-1] in ["County","Municipality","Borough","Parish"]:
+                            county = " ".join(county[:-1])
+                        county_st = f"{county} {state}"
+                        counties.append(county_st)
+                        toc = time()
+                        eta = round((toc-tic)*(N-n)/n,0)
+                        if self.VERBOSE: 
+                            print(f"{'\033[0G\033[2K' if self.ANSI else ''}Processing {state} record {n} of {N} {buildingid=} {latlon=} {county_st=} ({n/N*100:.1f}% done, {n/(toc-tic):.0f}/sec, {timedelta(seconds=eta)} to go)...",flush=True)
+                        else:
+                            pcdone = f"{n/N*100:.1f}"
+                            if last_pcdone != pcdone or last_eta != eta:
+                                print(f"{'\033[0G\033[2K' if self.ANSI else ''}Processing {state} ({pcdone}% done, ETA {timedelta(seconds=eta)})",flush=True,end="..." if self.ANSI else None)
+                                last_pcdone = pcdone
+                                last_eta = eta
+                print("done")
+                df["county"] = counties
+                df.drop(df[df["county"]==""].index,inplace=True)
+                df.set_index("county",inplace=True)
+                df.sort_index(inplace=True)
+                os.makedirs(os.path.dirname(pathname),exist_ok=True)
+                df.to_csv(pathname,index=True,header=True,compression="gzip")
+            except Exception as err:
+                print(f"ERROR: {pathname=} {err=}")
         super().__init__(df)
 
     def to_counties(self,
@@ -193,7 +211,8 @@ if __name__ == "__main__":
         for state in [x for x in STATE_CODES.values() if not os.path.exists(f"{Buildings.TARGET_PATH}/{x}")]:
             print(f"Processing {state}",end="...",flush=True)
             df = Buildings(state)
-            df.to_counties(state)
+            if len(df) > 0:
+                df.to_counties(state)
     except KeyboardInterrupt as err:
         print("\nINTERRUPT: Ctrl-C received",file=sys.stderr)
     # except Exception as err:
