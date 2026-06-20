@@ -2,6 +2,10 @@
 
 Documentation is located at https://www.eudoxys.com/buildings.
 
+Marimo notebook to preview/select/download data is available at https://molab.marimo.io/notebooks/nb_VhE7Lc7yYwafHwJxTQWyni/app.
+
+Data archive index is located at https://s3.us-east-1.amazonaws.com/buildings.eudoxys.com/index.csv.
+
 US Building Inventory
 ---------------------
 
