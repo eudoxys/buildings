@@ -18,7 +18,10 @@ import webbrowser as web
 from buildings import Buildings
 
 E_OK = 0
+"""Exit code for success"""
+
 E_FAILED = 1
+"""Exit code for failure"""
 
 def main(argv:list[str]|None=None) -> int:
     """Main function
