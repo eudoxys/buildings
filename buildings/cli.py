@@ -46,4 +46,4 @@ def main(argv:list[str]|None=None) -> int:
         return E_FAILED
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
