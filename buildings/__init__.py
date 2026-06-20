@@ -17,7 +17,7 @@ template:
 
 A comprehensive list of counties is available at
 
-
+  https://s3.us-east-1.amazonaws.com/buildings.eudoxys.com/index.csv
 
 The county-level files contain the following data
 
