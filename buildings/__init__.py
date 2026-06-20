@@ -59,6 +59,8 @@ Package Information
 
 - Documentation: https://www.eudoxys.com/buildings
 
+- Notebook: https://molab.marimo.io/notebooks/nb_VhE7Lc7yYwafHwJxTQWyni/app
+
 - Source code: https://github.com/eudoxys/buildings
 
 - Issues: https://github.com/eudoxys/buildings/issues
