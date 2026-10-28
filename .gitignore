@@ -180,3 +180,5 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 docs/
+# buildings: generated inventory (written by buildings/buildings.py and buildings/_make_index.py)
+/US/

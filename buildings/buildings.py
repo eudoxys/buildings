@@ -6,6 +6,7 @@ upload the `US/` folder and the `index.csv` file to your AWS S3 bucket.
 
 import os
 import sys
+import logging
 from time import time
 from datetime import timedelta
 from warnings import warn
@@ -15,8 +16,10 @@ import pandas as pd
 from geohash import geohash
 try:
     from ._find_county import find_county
-except: # dev only
+except ImportError: # dev only, when run as a script from this folder
     from _find_county import find_county
+
+_logger = logging.getLogger(__file__)
 
 class Buildings(pd.DataFrame):
     """Buildings inventory dataframe
@@ -52,7 +55,7 @@ class Buildings(pd.DataFrame):
     """
 
     LIBRARY_PATH = "https://s3.us-east-1.amazonaws.com/buildings.eudoxys.com/US/{state}.csv"
-    """Specifies the template for the where the data files are archied"""
+    """Specifies the template for where the state data files are archived"""
 
     VERBOSE = False
     """Enable verbose output"""
@@ -81,8 +84,17 @@ class Buildings(pd.DataFrame):
         - `state`: state postal code, e.g., "AK"
 
         - `refresh`: force refresh of local files from source data
+
+        Description
+        -----------
+
+        Reads `{TARGET_PATH}/{state}.csv.gz` if it exists and `refresh` is
+        false. Otherwise reads the state file at `LIBRARY_PATH`, finds the
+        county of every building (see `buildings._find_county`), and writes
+        `{TARGET_PATH}/{state}.csv.gz`. Buildings for which no county is
+        found are dropped. If the data cannot be read or processed, the
+        error is logged and the frame is empty.
         """
-        cache = {}
         file = self.LIBRARY_PATH.format(state=state)
         if self.VERBOSE: print("Downloading",file,end="...",flush=True)
         pathname = f"{self.TARGET_PATH}/{state}.csv.gz"
@@ -92,7 +104,7 @@ class Buildings(pd.DataFrame):
                 df = pd.read_csv(pathname).set_index("county")
                 if self.VERBOSE: print("ok")
             except Exception as err:
-                print(f"ERROR: {pathname=} {err=}")
+                _logger.error("unable to read %s (%s); rebuilding",pathname,err)
 
         if df is None:
             try:
@@ -133,7 +145,7 @@ class Buildings(pd.DataFrame):
                         county = find_county(*latlon)
                         retry *= 2
                     if county is None:
-                        print(f"ERROR: unable to find county for {buildingid=} at {latlon=}",file=sys.stderr)
+                        _logger.error("unable to find county for buildingid=%s at latlon=%s",buildingid,latlon)
                         counties.append("")
                     else:
                         county = county["county"]
@@ -158,15 +170,15 @@ class Buildings(pd.DataFrame):
                 df.sort_index(inplace=True)
                 os.makedirs(os.path.dirname(pathname),exist_ok=True)
                 df.to_csv(pathname,index=True,header=True,compression="gzip")
-            except Exception as err:
-                print(f"ERROR: {pathname=} {err=}")
+            except Exception as err: # pylint: disable=broad-exception-caught
+                _logger.error("unable to build %s (%s)",pathname,err)
         super().__init__(df)
 
     def to_counties(self,
-        state,
+        state:str,
         path:str|None=None,
         columns:list[str]|None=None,
-        ) -> list[str]:
+        ) -> dict[str,int]:
         """Write county-level building inventory files
 
         Arguments
@@ -174,14 +186,16 @@ class Buildings(pd.DataFrame):
 
         - `state`: state of which to write county files
         
-        - `path`: path to read/write
+        - `path`: path to read/write (default `TARGET_PATH`)
 
-        - `columns`: columns to output to CSV
+        - `columns`: columns to output to CSV (default all columns listed
+          in `buildings`)
 
         Returns
         -------
 
-        - `list[str]`: list of county-level CSV files created
+        - `dict[str,int]`: number of buildings written to each county-level
+          file, keyed by file name `{path}/{state}/{county} {state}.csv.gz`
         """
         if path is None:
             path = self.TARGET_PATH
@@ -191,7 +205,6 @@ class Buildings(pd.DataFrame):
         data[["latitude","longitude"]] = [[round(float(y),6) for y in x.split("/")] for x in data["location"]]
 
         # replace location with geohash at precision required for unique values
-        ok = False
         data["location"] = [geohash(lat,lon,self.GEOHASH_PRECISION) for lat,lon in data[["latitude","longitude"]].values]
         if len(data["location"].unique()) < len(data):
             warn(f"{state=} building location index is not unique (try increasing Buildings.GEOHASH_PRECISION)")
@@ -206,7 +219,7 @@ class Buildings(pd.DataFrame):
                 ]
         files = {}
         for county in data.index.unique():
-            df = data.loc[county,columns].sort_index()
+            df = data.loc[[county],columns].sort_index() # list keeps a frame for single-building counties
             csvname = county.replace(" City and "," ")
             if self.VERBOSE: print(f"  {csvname}: {len(df)} buildings",end="...",flush=True)
             file = f"{path}/{state}/{csvname}.csv.gz"
