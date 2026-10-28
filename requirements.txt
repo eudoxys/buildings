@@ -1,3 +1,4 @@
 pandas
 geopandas
+shapely
 geohash @ git+https://github.com/eudoxys/geohash

@@ -1,2 +1,7 @@
+# buildings/.gitignore: generated output that must never be committed
+.cache*
+*_errors.csv
+# generated inventory (written by `python3 -m buildings.buildings`)
 US/
+# TIGER county shapefiles (downloaded by hand; see README.md)
 tl_*.*

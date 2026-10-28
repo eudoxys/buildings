@@ -2,7 +2,11 @@
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.packages.find]
+include = ["buildings"]
+
 [tool.setuptools.package-data]
+# list every file pattern the package reads at run time
 buildings = ["*.py"]
 
 [tool.setuptools.dynamic]
@@ -10,8 +14,8 @@ dependencies = {file=["requirements.txt"]}
 
 [project]
 name = "buildings"
-version = "0.0.0"
-description = "US electric load model"
+version = "0.0.0" # 0.0.0 = unreleased (hidden by `epm index`)
+description = "US building inventory"
 authors = [
     {name = "David P. Chassin <dchassin@eudoxys.com>"},
     ]
@@ -19,16 +23,16 @@ maintainers = [
     {name = "David P. Chassin <dchassin@eudoxys.com>"},
     ]
 readme = "README.md"
-keywords = ["github","python","US","building","inventory"]
-license = {text="MIT License"}
+requires-python = "== 3.12.*" # must match the CI python version
+keywords = ["eudoxys","python","US","building","inventory"] # "eudoxys" marks an official Eudoxys release
+license-files = ["LICENSE"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3 :: Only",
     "Topic :: Software Development :: Libraries",
     ]
-dynamic=["dependencies"]
+dynamic = ["dependencies"]
 
 [project.urls]
 Homepage = "https://github.com/eudoxys/buildings"
@@ -38,3 +42,9 @@ Issues = "https://github.com/eudoxys/buildings/issues"
 
 [project.scripts]
 buildings = "buildings.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["buildings/_test"]
+markers = [
+    "network: downloads external data (slow on an empty cache)",
+    ]
