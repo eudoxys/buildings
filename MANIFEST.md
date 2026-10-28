@@ -7,12 +7,13 @@ Update this file in the same PR that adds, moves, or deletes a file.
 ## Start here
 
 1. `CLAUDE.md` — conventions and working rules
-2. `buildings/__init__.py` — package docs and public API
-3. `buildings/buildings.py` — the `Buildings` inventory class
+2. `DESIGN.md` — design, decisions, open questions
+3. `buildings/__init__.py` — package docs and public API
+4. `buildings/buildings.py` — the `Buildings` inventory class
 
 ## Task index
 
-- Change an output column: `buildings/buildings.py` (`to_counties` defaults and class docstring), `buildings/__init__.py` Data section, `README.md`, `notebook.py` table columns
+- Change an output column: `buildings/buildings.py` (`to_counties` defaults and class docstring), `buildings/__init__.py` Data section, `README.md`, `notebook.py` table columns, `DESIGN.md` Outputs
 - Add a CLI option: `buildings/cli.py`, `buildings/__init__.py` Syntax section
 - Fix a test: `buildings/_test/`; fixture data in `buildings/_test/conftest.py`
 - Rebuild the published inventory: `__main__` block of `buildings/buildings.py`, then `buildings/_make_index.py`; see `buildings/README.md` and the README Maintenance section
@@ -51,6 +52,7 @@ Update this file in the same PR that adds, moves, or deletes a file.
 |---|---|---|
 | `README.md` | user overview | |
 | `CLAUDE.md` | assistant guidance | |
+| `DESIGN.md` | package design | draft reconstructed from code |
 | `MANIFEST.md` | this file | |
 | `CONTRIBUTING.md` | contributor guide | approved-issue rule |
 | `TODO.md` | roadmap | |

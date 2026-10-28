@@ -21,8 +21,9 @@ and `US/index.csv`.
 
 - `MANIFEST.md`: map of every file, a task index, and what not to read.
   Read it first instead of listing folders.
-- There is no `DESIGN.md`; the design fits in the package docstring
-  (`buildings/__init__.py`).
+- `DESIGN.md`: design reconstructed from the implementation (draft, not
+  yet agreed), numbered decisions, and open questions. Follow its
+  decisions; ask before departing from one.
 
 Sibling Eudoxys dependencies: `geohash` (`geohash(lat,lon,precision)` for the
 building identifier).

@@ -14,6 +14,8 @@
 
 - [ ] First release (`pyproject.toml` version `YEAR.MONTH.0`)
 
+- [ ] Review `DESIGN.md` draft 1: confirm decisions and resolve open questions
+
 # Data
 
 - [ ] Record the AutoBEM retrieval date and per-state building counts in `buildings/README.md`
