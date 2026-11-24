@@ -1,7 +1,7 @@
 [![Validation](https://github.com/eudoxys/buildings/actions/workflows/validate.yaml/badge.svg)](https://github.com/eudoxys/buildings/actions/workflows/validate.yaml)
 [![Documentation](https://github.com/eudoxys/buildings/actions/workflows/deploy-pages.yaml/badge.svg)](https://github.com/eudoxys/buildings/actions/workflows/deploy-pages.yaml)
 
-# US building database
+## US building database
 
 `buildings` produces a county-level inventory of US buildings (location,
 type, code, floor and ground area, floors, climate zone) from the AutoBEM
@@ -13,11 +13,11 @@ Marimo notebook to preview/select/download data is available at https://molab.ma
 
 Data archive index is located at https://s3.us-east-1.amazonaws.com/buildings.eudoxys.com/index.csv.
 
-# Documentation
+## Documentation
 
 See https://www.eudoxys.com/buildings
 
-# Installation
+## Installation
 
 Install using Eudoxys Package Manager:
 
@@ -28,7 +28,7 @@ Install using `pip`:
 
     pip install git+https://github.com/eudoxys/buildings
 
-# US Building Inventory
+## US Building Inventory
 
 The state-level CSV files are the original dataset from ORNL. The state folders contain the county-level datasets generated from the state-level
 files.
@@ -53,13 +53,13 @@ The county-level files contain the following data
 
 - `longitude`: the building centroid longitude in degrees east (west is negative).
 
-# Maintenance
+## Maintenance
 
-## Update docs
+### Update docs
 
     make docs
 
-## Run tests
+### Run tests
 
     pip install -e . pytest
     pytest
@@ -67,7 +67,7 @@ The county-level files contain the following data
 The tests are fast and offline; see
 [`buildings/_test/README.md`](buildings/_test/README.md).
 
-## Rebuild the inventory
+### Rebuild the inventory
 
 Download the TIGER county shapefile as described in
 [`buildings/README.md`](buildings/README.md), set `Buildings.LIBRARY_PATH` to
@@ -80,9 +80,9 @@ then run from the `buildings/` folder:
 Generated files go to `US/` (gitignored) and are uploaded to the S3 bucket by
 hand. A full rebuild performs a county lookup for every building and is slow.
 
-# Examples
+## Examples
 
-## Command line
+### Command line
 
     buildings
 
@@ -92,7 +92,7 @@ outputs
 
 and opens the notebook in a browser.
 
-## Python
+### Python
 
 Read one county using the archive index:
 
@@ -102,12 +102,16 @@ Read one county using the archive index:
     url = index.loc[("US","WA","King"),"url"].replace(" ","+")
     print(pd.read_csv(url).head())
 
-# Citation
+## Citation
 
 To cite this dataset use the following:
 
 	Chassin, David P., "US Buildings Inventory" (2026). URL: https://www.eudoxys.com/buildings.
 
-# References
+## Acknowledgments
+
+- This work was authored in part for the U.S. Department of Energy (DOE) by the National Laboratory of the Rockies under Contract No. DE-AC36-08GO28308 through a grant from the Grid Controls and Communications Devision and by Lawrence Livermore National Laboratory under Contract DE-AC52-07NA27344 through a grant from the Advanced Grid Modeling Program.
+
+## References
 
 [1] New, J. R., Bass, B., & Adams, M. (2023). Automatic Building Energy Modeling (AutoBEM). U.S. Department of Energy. [DOE's OSTI Database](https://www.osti.gov/doecode/biblio/115947).
